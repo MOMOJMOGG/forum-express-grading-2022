@@ -134,9 +134,15 @@ const userController = {
   },
   addLike: (req, res, next) => {
     const { restaurantId } = req.params
-    Promise.all([
+    return Promise.all([
       Restaurant.findByPk(restaurantId),
-      Like.findOne({
+      // Like.findOne({
+      //   where: {
+      //     userId: req.user.id,
+      //     restaurantId
+      //   }
+      // })
+      Like.findAll({
         where: {
           userId: req.user.id,
           restaurantId
@@ -144,6 +150,7 @@ const userController = {
       })
     ])
       .then(([restaurant, like]) => {
+        console.log('LLL', like)
         if (!restaurant) throw new Error("Restaurant didn't exist!")
         if (like) throw new Error('You have liked this restaurant!')
         return Like.create({
