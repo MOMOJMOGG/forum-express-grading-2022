@@ -39,7 +39,7 @@ const userController = {
     res.redirect('/signin')
   },
   getUser: (req, res, next) => {
-    Promise.all([
+    return Promise.all([
       User.findByPk(req.params.id, {
         raw: true,
         nest: true
@@ -54,7 +54,7 @@ const userController = {
       .then(([user, comment]) => {
         console.log(user)
         console.log(comment)
-        res.render('profile', { user, comment })
+        res.render('users/profile', { user, comment })
       })
 
       // .then(user => {
@@ -69,13 +69,13 @@ const userController = {
       raw: true
     })
       .then(user => {
-        res.render('edit-profile', { user })
+        res.render('users/edit', { user })
       })
       .catch(err => next(err))
   },
   putUser: (req, res, next) => {
     const { name } = req.body
-    console.log(req.body)
+    // console.log(req.body)
     if (!name) throw new Error('User name is required!')
 
     const { file } = req // 把檔案取出來
@@ -91,7 +91,7 @@ const userController = {
         })
       })
       .then(() => {
-        req.flash('success_messages', 'user profile was successfully to update')
+        req.flash('success_messages', '使用者資料編輯成功')
         res.redirect(`/users/${req.params.id}`)
       })
       .catch(err => next(err))
