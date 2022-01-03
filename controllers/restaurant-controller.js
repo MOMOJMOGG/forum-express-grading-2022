@@ -77,7 +77,7 @@ const restaurantController = {
       .catch(err => next(err))
   },
   getFeeds: (req, res, next) => {
-    Promise.all([
+    return Promise.all([
       Restaurant.findAll({
         limit: 10,
         order: [['createdAt', 'DESC']],
@@ -103,21 +103,25 @@ const restaurantController = {
   },
   getTopRestaurants: (req, res, next) => {
     // 撈出所有 User 與 followers 資料
-    Restaurant.findAll({
+    return Restaurant.findAll({
       include: [{ model: User, as: 'FavoritedUsers' }]
     })
       .then(restaurants => {
         // 整理 users 資料，把每個 user 項目都拿出來處理一次，並把新陣列儲存在 users 裡
-        const result = restaurants = restaurants.map(restaurant => ({
+        let result = restaurants = restaurants.map(restaurant => ({
           // 整理格式
           ...restaurant.toJSON(),
           // 計算追蹤者人數
-          favoriteCount: restaurant.FavoritedUsers.length,
+          favoritedCount: restaurant.FavoritedUsers.length,
           // 判斷目前登入使用者是否已追蹤該 user 物件
           isFavorited: req.user.FavoritedRestaurants.some(f => f.id === restaurant.id)
         }))
-          .sort((a, b) => b.favoriteCount - a.favoriteCount) // Ex.: [10, 9, 5, 3 ...]
+          .sort((a, b) => b.favoritedCount - a.favoritedCount) // Ex.: [10, 9, 5, 3 ...]
 
+        if (result.length > 10) {
+          result = result.slice(0, 10)
+        }
+        console.log(result)
         res.render('top-restaurants', { restaurants: result })
       })
       .catch(err => next(err))

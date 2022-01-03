@@ -79,7 +79,7 @@ const userController = {
     if (!name) throw new Error('User name is required!')
 
     const { file } = req // 把檔案取出來
-    Promise.all([ // 非同步處理
+    return Promise.all([ // 非同步處理
       User.findByPk(req.params.id), // 去資料庫查有沒有這使用者
       imgurFileHandler(file) // 把檔案傳到 file-helper 處理
     ])
@@ -98,7 +98,7 @@ const userController = {
   },
   addFavorite: (req, res, next) => {
     const { restaurantId } = req.params
-    Promise.all([
+    return Promise.all([
       Restaurant.findByPk(restaurantId),
       Favorite.findOne({
         where: {
@@ -108,8 +108,11 @@ const userController = {
       })
     ])
       .then(([restaurant, favorite]) => {
+        console.log('restaurant', restaurant)
         if (!restaurant) throw new Error("Restaurant didn't exist!")
+        console.log('favorite', favorite)
         if (favorite) throw new Error('You have favorited this restaurant!')
+        console.log('pass')
         return Favorite.create({
           userId: req.user.id,
           restaurantId
@@ -119,7 +122,7 @@ const userController = {
       .catch(err => next(err))
   },
   removeFavorite: (req, res, next) => {
-    Favorite.findOne({
+    return Favorite.findOne({
       where: {
         userId: req.user.id,
         restaurantId: req.params.restaurantId
@@ -162,7 +165,7 @@ const userController = {
       .catch(err => next(err))
   },
   removeLike: (req, res, next) => {
-    Like.destroy({
+    return Like.destroy({
       where: {
         userId: req.user.id,
         restaurantId: req.params.restaurantId
@@ -194,7 +197,7 @@ const userController = {
   },
   addFollowing: (req, res, next) => {
     const { userId } = req.params
-    Promise.all([
+    return Promise.all([
       User.findByPk(userId),
       Followship.findOne({
         where: {
@@ -215,7 +218,7 @@ const userController = {
       .catch(err => next(err))
   },
   removeFollowing: (req, res, next) => {
-    Followship.findOne({
+    return Followship.findOne({
       where: {
         followerId: req.user.id,
         followingId: req.params.userId
